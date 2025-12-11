@@ -6,6 +6,9 @@ import whisper
 import requests
 import json
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # --- 1. VISUAL PIPELINE (MediaPipe) ---
 class VisualAnalyzer:
@@ -141,17 +144,13 @@ class ContentAgent:
         try:
             chat_completion = self.client.chat.completions.create(
                 messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Topic: {topic}\nTranscript: {transcript}"
-                    }
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Topic: {topic}\nTranscript: {transcript}"}
                 ],
-                model="llama3-8b-8192", # Using Llama 3 on Groq
-                response_format={"type": "json_object"}, # Enforce JSON
+                # OLD BROKEN MODEL: "llama3-8b-8192"
+                # NEW WORKING MODEL:
+                model="llama-3.3-70b-versatile", 
+                response_format={"type": "json_object"},
             )
             
             # Parse the response

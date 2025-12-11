@@ -20,7 +20,7 @@ app.add_middleware(
 print("⏳ Loading AI Models... (This might take 10-20 seconds)")
 visual_engine = VisualAnalyzer()
 audio_engine = AudioAnalyzer()
-content_engine = ContentAgent(model_name="llama3")
+content_engine = ContentAgent()
 print("✅ Models Loaded! API is ready.")
 
 @app.post("/analyze")

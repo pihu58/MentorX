@@ -1,11 +1,26 @@
+# --- Core API ---
 fastapi
 uvicorn
 python-multipart
 requests
-numpy
+python-dotenv
+
+# --- AI & Processing (Heavy) ---
+# Numpy is used by almost everything, listed first for caching
+numpy<2.0.0
+
+# Computer Vision
+# opencv-python-headless is 50% smaller than standard opencv-python
 opencv-python-headless
 mediapipe
-librosa
+
+# Audio Processing
+# moviepy 1.0.3 is stable and smaller than 2.0
 moviepy==1.0.3
-openai-whisper
+librosa
+
+# --- Generative AI ---
 groq
+# Whisper pulls PyTorch. We keep it, but the Dockerfile caching trick below 
+# will prevent it from re-downloading every time.
+openai-whisper
