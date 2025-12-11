@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+requests
+numpy
+opencv-python-headless
+mediapipe
+librosa
+moviepy==1.0.3
+openai-whisper
+groq

@@ -1,0 +1,10 @@
+### Whisper ASR (Automatic Speech Recognition)
+
+**Function in MentorX:**
+Whisper ASR converts the audio stream of the input video into accurate, timestamped transcripts. These transcripts are then fed into the Semantic Pipeline for scoring by the Llama 3 LLM.
+
+**Model Used (Recommended):**
+* **Model Size:** Small or Medium (depending on computational resources and accuracy needs). Since the system is designed to use CPU-optimized local libraries, the **'Small'** or **'Base'** model is often preferred for a containerized application to balance speed and accuracy.
+* **Access Method:** Integrated locally via the Python `whisper` library. It runs as part of the initial concurrent processing stream alongside the Visual and Acoustic pipelines.
+
+**Official Source Link:** [https://github.com/openai/whisper]

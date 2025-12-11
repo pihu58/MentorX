@@ -1,64 +1,109 @@
-# 🎓 AI-Powered Mentor Evaluation Platform
+# MentorX: Automated Multimodal Teaching Quality Evaluation
 
-> A multi-modal AI system that evaluates teaching performance by analyzing video (body language), audio (prosody/pacing), and text (content quality) in real-time.
+**Team ID:** Upsk-250439  
+**Repository:** https://github.com/pihu58/MentorX
 
-## 🏆 Project Overview
-This platform solves the challenge of subjective teaching feedback. Instead of relying on human bias, we use a hybrid AI pipeline to objectively score mentors on:
-- **Clarity:** Does the content make sense? (Llama 3)
-- **Engagement:** Eye contact, gestures, and energy. (MediaPipe)
-- **Delivery:** Pacing, tone variety, and pauses. (Librosa)
+## 1. Project Overview
+MentorX is an automated, multimodal, objective evaluation system designed to analyze teaching quality from video content. It solves the problem of manual, subjective and non-scalable evaluation in large education systems.
 
-## 🏗️ Architecture
-The system runs three parallel analysis pipelines:
-1.  **Visual Pipeline:** Uses **MediaPipe** to track 478 face landmarks and 33 pose landmarks to calculate "Energy" and "Eye Contact" scores.
-2.  **Audio Pipeline:** Uses **Librosa** to extract pitch, tempo (BPM), and silent intervals to measure vocal confidence.
-3.  **Content Pipeline:** Uses **OpenAI Whisper** for transcription and **Llama 3 (via Ollama)** as a pedagogical judge to rate technical accuracy and structure.
+The system evaluates three dimensions:
 
-## 🚀 Tech Stack
-- **Frontend:** Next.js 14, Tailwind CSS, Shadcn UI, Recharts
-- **Backend:** Python, FastAPI, Uvicorn
-- **AI/ML:** Llama 3 (8B), Ollama, MediaPipe, Librosa, MoviePy, Whisper
-- **Infrastructure:** Local GPU inference + Vercel Frontend
+- Content Quality (Text)
+- Delivery and Communication (Audio)
+- Engagement and Presence (Video)
 
-## 🛠️ Setup Instructions
+## 2. Architecture Overview
+MentorX uses an AI-first, decoupled microservices architecture with asyncio-based concurrent pipelines.
 
-### Prerequisites
-1.  **Node.js 18+** & **Python 3.10+**
-2.  **FFmpeg** installed and added to System PATH.
-3.  **Ollama** installed and running (`ollama run llama3`).
+### Components
 
-### Installation
-1.  **Clone the Repo:**
-    ```bash
-    git clone https://github.com/pihu58/mentor-eval-platform.git
-    cd mentor-eval-platform
-    ```
+| Component | Technology | Function | Deployment |
+|----------|------------|----------|------------|
+| Frontend | Next.js 14 | Real-time visualization | Vercel |
+| Backend | FastAPI (Dockerized) | Orchestration and splitting | Render |
+| AI Inference | Hybrid (CPU + Groq LPU) | Metric extraction | Groq LPU + Local CPU |
 
-2.  **Start the Backend:**
-    ```bash
-    cd backend
-    python -m venv venv
-    source venv/bin/activate  # or .\venv\Scripts\activate on Windows
-    pip install -r requirements.txt
-    python main.py
-    ```
-    *Server runs at http://localhost:8000*
+### Pipelines
 
-3.  **Start the Frontend:**
-    ```bash
-    cd ../frontend
-    npm install
-    npm run dev
-    ```
-    *App runs at http://localhost:3000*
+**Semantic Pipeline:** Whisper ASR + Llama 3-8B (Groq) for deterministic content scoring.  
+**Visual Pipeline:** MediaPipe and OpenCV for Eye Contact Ratio, Gesture Energy, Posture Openness.  
+**Acoustic Pipeline:** Librosa and FFmpeg for Pitch Variability, Pacing BPM, Pause Density.
 
-## 📊 Evaluation Criteria & Weights
-The final score is a weighted average of:
-- **Content Quality (35%):** Accuracy & Relevance (LLM Judge)
-- **Vocal Delivery (35%):** Pacing & Tone (Signal Processing)
-- **Visual Impact (30%):** Engagement & Confidence (Computer Vision)
+## 3. Setup Instructions
 
-## 🔮 Future Roadmap
-- [ ] Integration with Canvas LMS.
-- [ ] Real-time emotion detection using DeepFace.
-- [ ] "Compare with Expert" mode.
+### Clone repository
+```bash
+git clone https://github.com/pihu58/MentorX.git
+cd MentorX
+```
+
+### Environment variables (`backend/.env`)
+```
+GROQ_API_KEY="YOUR_GROQ_API_KEY"
+```
+
+### Folder structure
+```
+.
+├── src/
+├── models/
+├── docs/
+└── requirements.txt
+```
+
+## 4. Running Locally
+
+### Backend
+```bash
+docker build -t mentorx-backend .
+docker run -p 8000:8000 --env-file .env mentorx-backend
+```
+
+### Frontend
+```bash
+npm install
+npm run dev
+```
+
+## 5. API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/v1/evaluate | Evaluate teaching video |
+| GET | /health | Status check |
+
+## 6. Example JSON Output
+```json
+{
+  "total_score": 8.5,
+  "content_quality": {
+    "clarity_score": 9,
+    "correctness_score": 8,
+    "structure_score": 8,
+    "concept_coverage_score": 9
+  },
+  "visual_delivery": {
+    "eye_contact_ratio": 0.85,
+    "gesture_energy_score": 7,
+    "posture_openness_score": 8
+  },
+  "vocal_delivery": {
+    "pitch_variability_score": 9,
+    "pacing_bpm": 150,
+    "pause_density": 0.05
+  }
+}
+```
+
+## 7. Dependencies
+Semantic: Whisper, Llama 3-8B (Groq), asyncio  
+Visual: MediaPipe, OpenCV  
+Acoustic: Librosa, FFmpeg  
+Backend: FastAPI, Docker  
+Frontend: Next.js 14, Vercel  
+
+## 8. Contributors
+- Pihu Agrawal
+- Sukriti Talwar
+- Shubhank Gupta
+

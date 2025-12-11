@@ -1,0 +1,13 @@
+### MediaPipe Models (Visual Pipeline)
+
+**Function in MentorX:**
+MediaPipe is used to extract nonverbal immediacy features directly from the video stream. It runs fully on the CPU with lightweight pose estimation models.
+
+**Components/Models Used:**
+1.  **FaceMesh:** Used for calculating the **Eye Contact Ratio** by landmark-vector alignment with the camera axis.
+2.  **Pose:** Used for calculating **Gesture Energy** (variance in wrist landmark trajectories) and **Posture Openness** (shoulder-width and body-angle heuristics).
+
+**Access Method:**
+* Integrated locally via the Python `mediapipe` and `opencv` libraries. The model weights for FaceMesh and Pose are usually packaged within the MediaPipe library itself and optimized for efficient CPU use.
+
+**Official Library Link:** [ai.google.dev]
