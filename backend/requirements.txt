@@ -6,6 +6,6 @@ numpy
 opencv-python-headless
 mediapipe
 librosa
-moviepy
+moviepy==1.0.3
 openai-whisper
 groq
