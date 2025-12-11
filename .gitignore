@@ -1,0 +1,10 @@
+node_modules/
+venv/
+venv_compatible/       
+__pycache__/
+.env
+.DS_Store
+*.mp4
+*.wav
+*.mov
+frontend/.next/      
