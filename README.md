@@ -1,7 +1,6 @@
 # MentorX: Automated Multimodal Teaching Quality Evaluation
 
 **Team ID:** Upsk-250439  
-**Repository:** https://github.com/pihu58/MentorX
 
 ## 1. Project Overview
 MentorX is an automated, multimodal, objective evaluation system designed to analyze teaching quality from video content. It solves the problem of manual, subjective and non-scalable evaluation in large education systems.
@@ -20,7 +19,7 @@ MentorX uses an AI-first, decoupled microservices architecture with asyncio-base
 | Component | Technology | Function | Deployment |
 |----------|------------|----------|------------|
 | Frontend | Next.js 14 | Real-time visualization | Vercel |
-| Backend | FastAPI (Dockerized) | Orchestration and splitting | Render |
+| Backend | FastAPI (Dockerized) | Orchestration and splitting | GCP |
 | AI Inference | Hybrid (CPU + Groq LPU) | Metric extraction | Groq LPU + Local CPU |
 
 ### Pipelines
@@ -74,6 +73,9 @@ npm run dev
 
 
 ## 6. Example Input/Output
+![Input ](assets/input.png) 
+![Output](assets/output.png)
+
 ```json
 {
   "total_score": 8.5,
