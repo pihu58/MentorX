@@ -72,7 +72,8 @@ npm run dev
 | POST | /api/v1/evaluate | Evaluate teaching video |
 | GET | /health | Status check |
 
-## 6. Example JSON Output
+
+## 6. Example Input/Output
 ```json
 {
   "total_score": 8.5,
