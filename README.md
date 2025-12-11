@@ -30,7 +30,7 @@ The system runs three parallel analysis pipelines:
 ### Installation
 1.  **Clone the Repo:**
     ```bash
-    git clone [https://github.com/pihu58/mentor-eval-platform.git](https://github.com/pihu58/mentor-eval-platform.git)
+    git clone https://github.com/pihu58/mentor-eval-platform.git
     cd mentor-eval-platform
     ```
 
