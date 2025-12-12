@@ -59,8 +59,8 @@ export default function Home() {
       // IMPORTANT: This URL needs to point to wherever your backend is running.
       // For local dev: http://localhost:8000/analyze
       // For Vercel deployment: You'll use an environment variable.
-      //const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const backendUrl = "http://127.0.0.1:8000";
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      //const backendUrl = "http://127.0.0.1:8000";
       const response = await axios.post(`${backendUrl}/analyze`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 300000, // 5 minute timeout for heavy processing
