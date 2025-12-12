@@ -24,4 +24,4 @@ RUN python -c "import whisper; whisper.load_model('base')"
 # This is the only step that re-runs when you edit your code.
 COPY . .
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
