@@ -4,7 +4,7 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
-import { UploadCloud, Video, Loader2, CheckCircle2 } from "lucide-react";
+import { UploadCloud, Video, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,9 @@ interface AnalysisResult {
   pipelines: PipelineResults;
   transcript: string;
 }
+
+// 🛑 CONSTANT: Cloud Run Limit is 32MB. We set a safe limit of 30MB.
+const MAX_FILE_SIZE_MB = 30;
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -48,27 +51,54 @@ export default function Home() {
   // --- API Submission Logic ---
   const handleAnalyze = async () => {
     if (!file) return;
+
+    // 🛑 1. PROACTIVE CHECK: Check size BEFORE sending to server
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      setError(`⚠️ File is too large (${fileSizeMB.toFixed(1)} MB). The limit is ${MAX_FILE_SIZE_MB}MB. Please trim or compress the video.`);
+      return; // Stop here!
+    }
+
     setLoading(true);
     setError(null);
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("topic", "General Teaching"); // You could add an input field for this
+    formData.append("topic", "General Teaching");
 
     try {
-      // IMPORTANT: This URL needs to point to wherever your backend is running.
-      // For local dev: http://localhost:8000/analyze
-      // For Vercel deployment: You'll use an environment variable.
+      // ✅ CORRECT: Uses the environment variable
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      //const backendUrl = "http://127.0.0.1:8000";
+      
+      console.log(`Uploading to: ${backendUrl}`); // Debugging help
+
       const response = await axios.post(`${backendUrl}/analyze`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 300000, // 5 minute timeout for heavy processing
       });
       setResult(response.data);
+
     } catch (err: any) {
-      console.error(err);
-      setError(err.response?.data?.detail || "Analysis failed. Ensure backend is running.");
+      console.error("Analysis Error:", err);
+
+      // 🛑 2. REACTIVE CHECK: Handle specific Backend Errors
+      if (err.response) {
+        // Server responded with a status code (4xx, 5xx)
+        if (err.response.status === 413) {
+           setError("❌ Upload Failed: Video is too large for the server (Limit: 32MB). Please compress or trim it.");
+        } else if (err.response.status === 503 || err.response.status === 504) {
+           setError("❌ Server Timeout: The AI model took too long. Please try a shorter video (under 1 minute).");
+        } else {
+           // Generic error from FastAPI (like Validation Error)
+           setError(`❌ Server Error (${err.response.status}): ${err.response.data?.detail || "Unknown error occurred"}`);
+        }
+      } else if (err.request) {
+        // Request made but no response (Network Error)
+        setError("❌ Network Error: Could not connect to backend. The server might be waking up (Cold Start). Wait 10 seconds and try again.");
+      } else {
+        // Something else happened
+        setError(`❌ Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -82,7 +112,6 @@ export default function Home() {
       </CardHeader>
       <CardContent>
         <div className="text-3xl font-bold text-gray-800 mb-2">{score}</div>
-        {/* Normalize score to percentage for progress bar if needed. Assuming scores are 0-10 */}
         <Progress value={score * 10} className={`h-2 ${colorClass.replace("bg-", "[&>div]:bg-")}`} />
       </CardContent>
     </Card>
@@ -94,7 +123,7 @@ export default function Home() {
     return (
       <main className="container mx-auto p-6 max-w-5xl space-y-6">
          <Button variant="ghost" onClick={() => { setResult(null); setFile(null); setPreviewUrl(null) }} className="mb-4 text-white hover:text-white/80 hover:bg-white/10">
-            ← Analyze another video
+           ← Analyze another video
         </Button>
 
         {/* Overall Score Circle */}
@@ -102,7 +131,6 @@ export default function Home() {
            <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
           <h2 className="text-xl font-semibold mb-6 text-gray-700">Overall Teaching Score</h2>
           <div className="relative inline-flex items-center justify-center">
-            {/* Simple CSS circle for demo, could use a charting lib for real gauge */}
             <div className="w-40 h-40 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center shadow-xl">
                <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center">
                   <span className="text-5xl font-extrabold text-primary">{result.overall_score}</span>
@@ -113,7 +141,6 @@ export default function Home() {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Mapping your backend data to the UI cards mentioned in screenshots */}
             <MetricCard 
               title="Clarity (Content)" 
               score={pipelines?.content?.content_score ?? 0} 
@@ -138,7 +165,6 @@ export default function Home() {
               score={pipelines?.visual?.details?.energy ?? 0} 
               colorClass="bg-purple-500" 
             />
-            {/* Pacing needs normalization. Assuming 120bpm is ideal (10/10) */}
             <MetricCard 
               title="Pacing (BPM)" 
               score={Math.min(Math.round(pipelines?.audio?.details?.pace_bpm ?? 0), 160)} 
@@ -150,17 +176,16 @@ export default function Home() {
              {/* Summary / Transcript */}
             <Card className="shadow-md">
                 <CardHeader>
-                    <CardTitle>Generating Transcript Summary...</CardTitle>
+                    <CardTitle>Generated Transcript</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm leading-relaxed h-48 overflow-y-auto p-2 bg-slate-50 rounded-md">
-                      {/* You would use the LLM to generate a real summary based on the transcript. For now, showing transcript fragment. */}
                       {result.transcript || "No transcript available."}
                   </p>
                 </CardContent>
             </Card>
 
-             {/* Strengths & Recommendations - SAFE VERSION */}
+             {/* Strengths & Recommendations */}
               <div className="space-y-6">
                   <Card className="shadow-md">
                       <CardHeader>
@@ -168,7 +193,6 @@ export default function Home() {
                       </CardHeader>
                       <CardContent>
                           <ul className="space-y-2">
-                              {/* SAFE CHECK: pipelines?.content?.key_strengths */}
                               {pipelines?.content?.key_strengths?.map((strength, i) => (
                                   <li key={i} className="flex items-start gap-2">
                                       <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
@@ -185,16 +209,12 @@ export default function Home() {
                       </CardHeader>
                       <CardContent>
                           <ul className="space-y-2">
-                              {/* SAFE CHECK: pipelines?.content?.missing_concepts */}
                               {pipelines?.content?.missing_concepts?.map((concept, i) => (
                                   <li key={i} className="text-sm flex items-start gap-2 before:content-['•'] before:mr-2 before:text-yellow-500">
                                       Consider covering: {concept}
                                   </li>
-                              )) || (
-                                  <li className="text-sm text-muted-foreground">Keep up the great work!</li>
-                              )}
+                              )) || <li className="text-sm text-muted-foreground">Keep up the great work!</li>}
                               
-                              {/* SAFE CHECK: pipelines?.audio?.details?.pace_bpm */}
                               {(pipelines?.audio?.details?.pace_bpm ?? 0) > 150 && (
                                   <li className="text-sm flex gap-2 before:content-['•'] before:mr-2 before:text-yellow-500">
                                       Try slowing down your speaking pace slightly.
@@ -209,7 +229,6 @@ export default function Home() {
     );
   }
 
-
   // ================= View: Upload Page =================
   return (
     <main className="container mx-auto p-6 min-h-screen flex flex-col items-center justify-center">
@@ -219,7 +238,7 @@ export default function Home() {
           <p className="text-muted-foreground">Upload your lecture to get instant pedagogical feedback.</p>
         </CardHeader>
         <CardContent className="space-y-6">
-          
+           
           {/* Dropzone Area */}
           <div
             {...getRootProps()}
@@ -234,7 +253,7 @@ export default function Home() {
             ) : (
               <div>
                 <p className="text-lg font-medium text-gray-700">Drop your teaching video here or click to browse</p>
-                <p className="text-sm text-muted-foreground mt-2">Supports MP4, MOV, AVI (Max 200MB)</p>
+                <p className="text-sm text-muted-foreground mt-2">Supports MP4, MOV, AVI (Max {MAX_FILE_SIZE_MB}MB)</p>
               </div>
             )}
           </div>
@@ -255,6 +274,7 @@ export default function Home() {
 
                {error && (
                    <Alert variant="destructive">
+                     <AlertTriangle className="h-4 w-4" />
                      <AlertTitle>Error</AlertTitle>
                      <AlertDescription>{error}</AlertDescription>
                    </Alert>
